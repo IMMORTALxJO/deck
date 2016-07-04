@@ -1,3 +1,4 @@
+%% generate bin data from number , bin:gen(12)
 -module(bin).
 -export([gen/1]).
 
