@@ -1,3 +1,3 @@
-# FIRST GIT
+# TEACHING
 
-first git
+javascript / node.js / erlang
