@@ -6,5 +6,6 @@
 -export([gen/1]).
 
 gen(S)-> gen(lists:seq(2,S),[]).
+
 gen([],P) -> lists:reverse(P);
 gen([H|T],P)->	gen( [X||X<-T,X rem H /= 0],[H|P]).

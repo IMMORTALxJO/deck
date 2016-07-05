@@ -1,13 +1,11 @@
 -module(for).
 -export([gen/1,gen/2,map/2]).
 
-
 %% generator of	number lists
 %% for:gen(10).
 %% [0,1,2,3,4,5,6,7,8,9,10]
 %% for:gen(3,-3).
 %% [3,2,1,0,-1,-2,-3]
-
 
 gen(N)->gen(0,N).
 
