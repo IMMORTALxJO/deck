@@ -102,6 +102,11 @@ web_app = web.Application([
 
 # init servers
 if __name__ == '__main__':
-    tcp_server.listen(8081, '0.0.0.0')
-    web_app.listen(80)
+    tcp_server_port=8081
+    tcp_server_host='0.0.0.0'
+    web_app_port=8080
+    tcp_server.listen(tcp_server_port, tcp_server_host)
+    web_app.listen(web_app_port)
+    print "web_app works on %s port" % (web_app_port)
+    print "tcp_server works on %s port" % (tcp_server_port)
     ioloop.IOLoop.instance().start()

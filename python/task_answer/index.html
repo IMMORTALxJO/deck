@@ -68,7 +68,7 @@
 		</div>
 		<script type="text/javascript">
 			var init_ws=function(){
-				var ws = new WebSocket("ws://"+location.hostname+'/ws');
+				var ws = new WebSocket("ws://"+location.host+'/ws');
 				var message_virgin=true;
 				var trim=function(str){
 					return str.replace(new RegExp('<','g'),'&lt;').replace(new RegExp('>','g'),'&gt;');
