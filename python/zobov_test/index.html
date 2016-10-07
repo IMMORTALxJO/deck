@@ -1,0 +1,113 @@
+<html>
+	<head>
+		<title>Completed Task</title>
+		<style type="text/css">
+			body{
+				padding:0px;
+				margin:0px;
+				line-height:18px;
+				font-size:16px;
+				background-color:#edeef0;
+			}
+			h2{
+				line-height: 25px;
+				font-size: 19px;
+				font-weight: 400;
+				margin: 0px;
+			}
+			.text_line{
+				width:100%;
+				min-height:15px;
+			}
+			.text_line > .label{
+				color:#828282;
+				width:100px;
+				float:left;
+			}
+			.text_line > .labeled_text{
+				overflow: hidden;
+			}
+			#content{
+				width:710px;
+				height:auto;
+				margin:0px auto;
+			}
+			#content > .block{
+				height:auto;
+				display: block;
+				background-color: #fff;
+				padding: 15px 20px 20px;
+				border-radius:2px;
+				box-shadow: 0 1px 0 0 #d7d8db, 0 0 0 1px #e3e4e8;
+				margin: 15px 0 0;
+			}
+			#content > .block > .bottom_border_line{
+				width:100%;
+				padding-bottom:15px;
+				margin-bottom:15px;
+				border-bottom:1px solid #e7e8ec;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="content">
+			<div class="block" style="float:left;width:200px;">
+				<h2>Онлайн хосты</h2>
+				<div class="bottom_border_line"></div>
+				<div id="online_hosts">
+					<div class="text_line">Нет хостов онлайн</div>
+				</div>
+			</div>
+			<div class="block" style="float:right;width:400px;">
+				<h2>Сообщения</h2>
+				<div class="bottom_border_line"></div>
+				<div id="messages">
+					<div class="text_line">Нет сообщений</div>					
+				</div>
+			</div>
+		</div>
+		<script type="text/javascript">
+			var init_ws=function(){
+				var ws = new WebSocket("ws://"+location.hostname+'/ws');
+				var message_virgin=true;
+				var trim=function(str){
+					return str.replace(new RegExp('<','g'),'&lt;').replace(new RegExp('>','g'),'&gt;');
+				}
+				var els = {
+					online_hosts:document.getElementById('online_hosts'),
+					messages:document.getElementById('messages')
+				}
+				ws.onmessage=function(o){
+					var data=JSON.parse(o.data);
+					switch(data[0]){
+						case 'online_hosts':
+							if(data[1].length==0){
+								els.online_hosts.innerHTML='<div class="text_line">Нет хостов онлайн</div>';
+								return;
+							}
+							els.online_hosts.innerHTML=data[1].map(function(d){return '<div class="text_line">'+trim(d)+'</div>';}).join('');
+						break;
+						case 'message':
+							var text_line=document.createElement('div');
+							var label=document.createElement('div');
+							var labeled_text=document.createElement('div');
+							text_line.setAttribute('class','text_line');
+							label.setAttribute('class','label');
+							labeled_text.setAttribute('class','labeled_text');
+							label.innerHTML='['+trim(data[1])+']';
+							labeled_text.innerHTML=trim(data[2]).replace('::',' |');
+							text_line.appendChild(label);
+							text_line.appendChild(labeled_text);
+							if(message_virgin){
+								els.messages.innerHTML='';
+								message_virgin=false;
+							}
+							els.messages.appendChild(text_line);
+						break;
+					}
+				}
+			}
+			document.body.onload=init_ws;
+		</script>
+	</body>
+</html>
