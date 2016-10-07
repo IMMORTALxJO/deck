@@ -1,3 +1,3 @@
 # TEACHING
 
-javascript / node.js / erlang
+javascript / node.js / erlang / python
