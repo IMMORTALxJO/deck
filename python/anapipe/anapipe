@@ -1,0 +1,186 @@
+#!/usr/bin/python
+import os
+import re
+import sys
+import time
+from threading import Thread
+
+OPTS={
+ 'patterns': [],    # patterns list
+ 'lines_count': 10, # lines per pattern
+ 'flush': False, # clear logs after every screen 
+ 'refresh_time': 1, # refresh time
+ 'status': 'monitor',
+ 'ops_counter': 0,
+ 'recs_counter': 0,
+ 'keys_counter': 0
+}
+
+class sorted_dict:
+  keys = 0
+  reqs = 0
+  def __init__( self, size=10 ):
+    self.sort_size = size
+    self.keys_counter = 0
+    self.weight = 0
+    self.flush()
+
+  def add( self, key ):
+    if key in self.MAP:
+      self.MAP[ key ] = ( self.MAP[ key ][0]+1, self.txid )
+    else:
+      self.MAP[ key ] = ( 1, self.txid )
+      self.keys_counter += 1
+      sorted_dict.keys += 1
+    if self.MAP[ key ][0] >= self.lowest:
+      self.dirty[ key ] = 1
+    self.weight += 1
+    sorted_dict.reqs += 1
+    self.txid += 1
+
+  def up_key( self, key ):
+    weight = self.MAP[ key ][0]
+    if weight<self.lowest:
+      return
+    id = 0
+    if key in self.sorted_map:
+      self.sorted.pop( self.sorted_map[ key ] )
+      del self.sorted_map[ key ]
+    while id<len(self.sorted) and weight>=self.sorted[ id ][ 0 ]:
+      id += 1
+    self.sorted.insert( id, ( weight, key ) )
+    self.sorted = self.sorted[-self.sort_size:]
+    self.sorted_map = {}
+    i = 0
+    for w, k in self.sorted:
+      self.sorted_map[ k ] = i
+      i += 1
+    if len(self.sorted) == self.sort_size:
+      self.lowest = self.sorted[0][0]
+
+  def up_dirty( self ):
+    dirty = self.dirty.keys()
+    self.dirty = {}
+    for key in dirty:
+      self.up_key( key )
+
+  def get( self ):
+    self.up_dirty()
+    r = []
+    for w, k in self.sorted:
+      r.append( ( w, k ) )
+    r.reverse()
+    return r
+
+  def flush( self ):
+    self.sorted = []
+    self.sorted_map = {}
+    self.dirty = {}
+    self.MAP = {}
+    self.txid = 0
+    self.lowest = 0
+    self.keys_counter = 0
+    self.weight = 0
+
+
+def reader(  OPTS, MAP ):
+  patterns = OPTS[ 'patterns' ]
+  for line in sys.stdin:
+    OPTS[ 'ops_counter' ] += 1
+    _splited = line[:-2].split(' ')
+    for key, name in patterns:
+      try:
+        _match = key.format( a=_splited )
+        MAP[ key ].add( _match )
+      except:
+        continue
+
+
+
+def monitor( OPTS, MAP ):
+  def show():
+    _MAP = {}
+    _UNIQ = {}
+    _WEIGHT = {}
+    ops_counter = OPTS[ 'ops_counter' ]
+    OPTS[ 'ops_counter' ] = 0
+    for key, name in OPTS[ 'patterns' ]:
+      _MAP[ name ] = MAP[ key ].get()
+      _UNIQ[ name ] = MAP[ key ].keys_counter
+      _WEIGHT[ name ] = MAP[ key ].weight
+
+    os.system(['clear','cls'][os.name == 'nt'])      
+    print '======= ANAPIPE ===> v2'
+    print '== Ops : %d' % ops_counter
+    print '== Keys : %d' % sorted_dict.keys
+    print '== Reqs : %d' % sorted_dict.reqs
+    for key in _MAP:
+      print '===================> '+key 
+      if len(_MAP)>1:
+        print '== Keys: %d' % _UNIQ[ key ]
+        print '== Reqs: %d' % _WEIGHT[ key ]
+        print '========'
+      if len(_MAP[ key ])==0:
+        continue
+      length = str(len(str(_MAP[ key ][0][0])))
+      for count, touch_name in _MAP[ key ]: print  ( '%-'+length+'d %s' ) % ( count, touch_name )
+    if OPTS['flush']:
+      for pattern in MAP:
+        MAP[ pattern ].flush()
+
+  mili = OPTS[ 'refresh_time' ]*1000
+  now_mili = 0
+
+  while OPTS['status'] == 'monitor':
+    time.sleep( 0.1 )
+    now_mili += 100
+    if now_mili >= mili:
+      show()
+      now_mili = 0
+  show()
+  sys.exit(0)
+  
+
+
+sys.argv.pop(0)
+while len(sys.argv)>0:
+  arg = sys.argv.pop(0)
+  if arg == '-c' or arg == '--count':
+    OPTS['lines_count'] = int(sys.argv.pop(0))
+    continue
+  if arg == '-f' or arg == '--flush':
+    OPTS['flush'] = True
+    continue
+  if arg == '-s' or arg == '--sleep':
+    OPTS['refresh_time'] = float(sys.argv.pop(0))
+    continue
+  if arg=='?' or arg=='-h' or arg=='--help': # print help
+    print 'ANAPIPE help:'
+    print ' -f   | --flush    : statistics will reset after each display (default FALSE)'
+    print ' -s N | --sleep N  : update statistics every N seconds (default 1)'
+    print ' -c N | --count N  : show the first N positions (default 10)'
+    print ' -h   | --help | ? : print this help'
+    sys.exit(0)
+
+  arr=re.findall( '(\d+|\D+)', arg)
+  pattern=''
+  for el in arr:
+    if re.match( '\D', el):
+      pattern += el
+    else:
+      pattern += '{a['+el+']}'
+  OPTS['patterns'].append( ( pattern, arg ) )
+
+if len(OPTS['patterns'])==0:
+  OPTS['patterns'] = [ ( '{a[0]}', '0' ) ]
+
+
+MAP = {}
+for key, name in OPTS[ 'patterns' ]: MAP[ key ] = sorted_dict( OPTS['lines_count'] )
+
+read_thread = Thread(target=reader, args=( OPTS, MAP ) )
+read_thread.start()
+try:
+  monitor( OPTS, MAP )
+except KeyboardInterrupt:
+  sys.exit( 0 )
