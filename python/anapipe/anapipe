@@ -6,6 +6,7 @@ import sys
 import time
 
 OPTS={
+ 'version':'v2',
  'patterns': [],    # patterns list
  'lines_count': 10, # lines per pattern
  'flush': False, # clear logs after every screen 
@@ -89,8 +90,7 @@ def reader(  OPTS, MAP ):
     _splited = line[:-1].split(' ')
     for key, name in patterns:
       try:
-        _match = key.format( a=_splited )
-        MAP[ key ].add( _match )
+        MAP[ key ].add( key.format( a=_splited ) )
       except:
         continue
   OPTS['status'] = 'ended'
@@ -109,7 +109,7 @@ def monitor( OPTS, MAP ):
       _WEIGHT[ name ] = MAP[ key ].weight
 
     os.system(['clear','cls'][os.name == 'nt'])      
-    print '======= ANAPIPE ===> v2'
+    print '======= ANAPIPE ===> '+OPTS['version']
     print '== Ops : %d' % ops_counter
     print '== Keys : %d' % sorted_dict.keys
     print '== Reqs : %d' % sorted_dict.reqs
