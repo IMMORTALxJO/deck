@@ -27,19 +27,20 @@ class sorted_dict:
 
   def add( self, key ):
     if key in self.MAP:
-      self.MAP[ key ] = ( self.MAP[ key ][0]+1, self.txid )
+      self.MAP[ key ] += 1
     else:
-      self.MAP[ key ] = ( 1, self.txid )
+      self.MAP[ key ] = 1
       self.keys_counter += 1
       sorted_dict.keys += 1
-    if self.MAP[ key ][0] >= self.lowest:
+
+    if self.MAP[ key ] >= self.lowest:
       self.dirty[ key ] = 1
     self.weight += 1
     sorted_dict.reqs += 1
     self.txid += 1
 
   def up_key( self, key ):
-    weight = self.MAP[ key ][0]
+    weight = self.MAP[ key ]
     if weight<self.lowest:
       return
     id = 0
@@ -87,14 +88,14 @@ def reader(  OPTS, MAP ):
   patterns = OPTS[ 'patterns' ]
   for line in sys.stdin:
     OPTS[ 'ops_counter' ] += 1
-    _splited = line[:-2].split(' ')
+    _splited = line[:-1].split(' ')
     for key, name in patterns:
       try:
         _match = key.format( a=_splited )
         MAP[ key ].add( _match )
       except:
         continue
-
+  OPTS['status'] = 'ended'
 
 
 def monitor( OPTS, MAP ):
@@ -178,9 +179,10 @@ if len(OPTS['patterns'])==0:
 MAP = {}
 for key, name in OPTS[ 'patterns' ]: MAP[ key ] = sorted_dict( OPTS['lines_count'] )
 
-read_thread = Thread(target=reader, args=( OPTS, MAP ) )
-read_thread.start()
+monitor_thread = Thread(target=monitor, args=( OPTS, MAP ) )
+monitor_thread.start()
+
 try:
-  monitor( OPTS, MAP )
+  reader( OPTS, MAP )
 except KeyboardInterrupt:
   sys.exit( 0 )
