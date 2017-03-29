@@ -1,9 +1,9 @@
 #!/usr/bin/python
+from threading import Thread
 import os
 import re
 import sys
 import time
-from threading import Thread
 
 OPTS={
  'patterns': [],    # patterns list
@@ -21,8 +21,6 @@ class sorted_dict:
   reqs = 0
   def __init__( self, size=10 ):
     self.sort_size = size
-    self.keys_counter = 0
-    self.weight = 0
     self.flush()
 
   def add( self, key ):
@@ -179,10 +177,10 @@ if len(OPTS['patterns'])==0:
 MAP = {}
 for key, name in OPTS[ 'patterns' ]: MAP[ key ] = sorted_dict( OPTS['lines_count'] )
 
-monitor_thread = Thread(target=monitor, args=( OPTS, MAP ) )
-monitor_thread.start()
+reader_thread = Thread(target=reader, args=( OPTS, MAP ) )
+reader_thread.start()
 
 try:
-  reader( OPTS, MAP )
+  monitor( OPTS, MAP )
 except KeyboardInterrupt:
   sys.exit( 0 )
