@@ -1,5 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+# https://github.com/IMMORTALxJO/training/tree/master/python/anapipe
 
 from threading import Thread
 import os
