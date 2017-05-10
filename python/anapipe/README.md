@@ -10,7 +10,7 @@ ANAPIPE help:
 ```
 ### Usage example
 ```
-[user@host ~]# tail /var/log/nginx/access.log | ./anapipe 0 0-6
+[user@host ~]# tail -f /var/log/nginx/access.log | ./anapipe 0 0-6
 ┌─ ANAPIPE v2 ────────────────────────────────────────────────────┐
 ├── 0 ────────────────────────────────────────────────────────────┤
 │  Keys : 4                                                       │
