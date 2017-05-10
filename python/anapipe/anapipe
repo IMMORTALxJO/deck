@@ -109,9 +109,10 @@ def monitor( OPTS, MAP ):
       _WEIGHT[ name ] = MAP[ key ].weight
 
     BOX_SIZE = sorted_dict.max_len[0]+sorted_dict.max_len[1]+6
+    if BOX_SIZE < 15:
+      BOX_SIZE = 15
     if BOX_SIZE > 100:
       BOX_SIZE = 100
-
     os.system( [ 'clear', 'cls' ][ os.name == 'nt' ] )
 
     print '┌─ ANAPIPE %s %s┐' % ( OPTS['version'], '─'*( BOX_SIZE-13-len( OPTS['version'] ) ) )
