@@ -14,9 +14,7 @@ OPTS={
  'lines_count': 10, # lines per pattern
  'flush': False, # clear logs after every screen 
  'refresh_time': 1, # refresh time
- 'status': 'monitor',
- 'recs_counter': 0,
- 'keys_counter': 0
+ 'status': 'monitor'
 }
 
 class sorted_dict:
