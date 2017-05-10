@@ -1,15 +1,15 @@
 ## ANAPIPE
 realtime log statistics in CLI
-
+`
 [user@host ~]# ./anapipe -h
 ANAPIPE help:
  -f   | --flush    : statistics will reset after each display (default FALSE)
  -s N | --sleep N  : update statistics every N seconds (default 1)
  -c N | --count N  : show the first N positions (default 10)
  -h   | --help | ? : print this help
-
-# Example of usage
-
+`
+### Example of usage
+`
 [user@host ~]# cat /var/log/nginx/access.log | ./anapipe 0 0-6
 
 ┌─ ANAPIPE v2 ────────────────────────────────────────────────────────────────────────────┐
@@ -37,3 +37,4 @@ ANAPIPE help:
 │  1  77.221.128.82-/ui/fonts/open_sans/open_sans_v13_latin_700.woff2                     │
 │  1  77.221.128.82-/plugins/kibana/assets/visualize.svg                                  │
 └─────────────────────────────────────────────────────────────────────────────────────────┘
+`
