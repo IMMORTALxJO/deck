@@ -1,4 +1,6 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 from threading import Thread
 import os
 import re
@@ -12,14 +14,13 @@ OPTS={
  'flush': False, # clear logs after every screen 
  'refresh_time': 1, # refresh time
  'status': 'monitor',
- 'ops_counter': 0,
  'recs_counter': 0,
  'keys_counter': 0
 }
 
 class sorted_dict:
-  keys = 0
-  reqs = 0
+
+  max_len = [ 0, 0 ]
   def __init__( self, size=10 ):
     self.sort_size = size
     self.flush()
@@ -30,13 +31,10 @@ class sorted_dict:
     else:
       self.MAP[ key ] = 1
       self.keys_counter += 1
-      sorted_dict.keys += 1
 
     if self.MAP[ key ] >= self.lowest:
       self.dirty[ key ] = 1
     self.weight += 1
-    sorted_dict.reqs += 1
-    self.txid += 1
 
   def up_key( self, key ):
     weight = self.MAP[ key ]
@@ -63,12 +61,17 @@ class sorted_dict:
     self.dirty = {}
     for key in dirty:
       self.up_key( key )
+    for weight, key in self.sorted:
+      if len(str(weight))>sorted_dict.max_len[0]:
+        sorted_dict.max_len[0] = len(str(weight))
+      if len(key)>sorted_dict.max_len[1]:
+        sorted_dict.max_len[1] = len(key)
 
   def get( self ):
     self.up_dirty()
     r = []
-    for w, k in self.sorted:
-      r.append( ( w, k ) )
+    for weight, key in self.sorted:
+      r.append( ( weight, key ) )
     r.reverse()
     return r
 
@@ -77,7 +80,6 @@ class sorted_dict:
     self.sorted_map = {}
     self.dirty = {}
     self.MAP = {}
-    self.txid = 0
     self.lowest = 0
     self.keys_counter = 0
     self.weight = 0
@@ -86,7 +88,6 @@ class sorted_dict:
 def reader(  OPTS, MAP ):
   patterns = OPTS[ 'patterns' ]
   for line in sys.stdin:
-    OPTS[ 'ops_counter' ] += 1
     _splited = line[:-1].split(' ')
     for key, name in patterns:
       try:
@@ -101,28 +102,33 @@ def monitor( OPTS, MAP ):
     _MAP = {}
     _UNIQ = {}
     _WEIGHT = {}
-    ops_counter = OPTS[ 'ops_counter' ]
-    OPTS[ 'ops_counter' ] = 0
     for key, name in OPTS[ 'patterns' ]:
       _MAP[ name ] = MAP[ key ].get()
       _UNIQ[ name ] = MAP[ key ].keys_counter
       _WEIGHT[ name ] = MAP[ key ].weight
 
-    os.system(['clear','cls'][os.name == 'nt'])      
-    print '======= ANAPIPE ===> '+OPTS['version']
-    print '== Ops : %d' % ops_counter
-    print '== Keys : %d' % sorted_dict.keys
-    print '== Reqs : %d' % sorted_dict.reqs
+    BOX_SIZE = sorted_dict.max_len[0]+sorted_dict.max_len[1]+6
+    if BOX_SIZE > 100:
+      BOX_SIZE = 100
+
+    os.system( [ 'clear', 'cls' ][ os.name == 'nt' ] )
+
+    print '┌─ ANAPIPE %s %s┐' % ( OPTS['version'], '─'*( BOX_SIZE-13-len( OPTS['version'] ) ) )
     for key in _MAP:
-      print '===================> '+key 
+      print '├── %s %s┤' % ( key, '─'*( BOX_SIZE-6-len( key ) )) 
       if len(_MAP)>1:
-        print '== Keys: %d' % _UNIQ[ key ]
-        print '== Reqs: %d' % _WEIGHT[ key ]
-        print '========'
+        print '│  Keys : %s │' % str(_UNIQ[ key ]).ljust( BOX_SIZE-12 )
+        print '│  Reqs : %s │' % str(_WEIGHT[ key ]).ljust( BOX_SIZE-12 )
+        print '├%s┤' % ( '─'*(BOX_SIZE-2) )
       if len(_MAP[ key ])==0:
         continue
       length = str(len(str(_MAP[ key ][0][0])))
-      for count, touch_name in _MAP[ key ]: print  ( '%-'+length+'d %s' ) % ( count, touch_name )
+      for count, touch_name in _MAP[ key ]:
+        to_print = ( '%-'+length+'d %s' ) % ( count, touch_name )
+        if len(to_print)> BOX_SIZE-5:
+          to_print = to_print[:BOX_SIZE-8]+'...'
+        print '│  %s │' % to_print.ljust( BOX_SIZE-5 )
+    print '└%s┘' % ( '─'*(BOX_SIZE-2) )
     if OPTS['flush']:
       for pattern in MAP:
         MAP[ pattern ].flush()
@@ -161,21 +167,21 @@ while len(sys.argv)>0:
     print ' -h   | --help | ? : print this help'
     sys.exit(0)
 
-  arr=re.findall( '(\d+|\D+)', arg)
-  pattern=''
+  arr = re.findall( '(\d+|\D+)', arg )
+  pattern = ''
   for el in arr:
-    if re.match( '\D', el):
+    if re.match( '\D', el ):
       pattern += el
     else:
-      pattern += '{a['+el+']}'
+      pattern += '{a[%s]}' % el
   OPTS['patterns'].append( ( pattern, arg ) )
 
 if len(OPTS['patterns'])==0:
-  OPTS['patterns'] = [ ( '{a[0]}', '0' ) ]
-
+  OPTS[ 'patterns' ] = [ ( '{a[0]}', '0' ) ]
 
 MAP = {}
-for key, name in OPTS[ 'patterns' ]: MAP[ key ] = sorted_dict( OPTS['lines_count'] )
+for key, name in OPTS[ 'patterns' ]:
+  MAP[ key ] = sorted_dict( OPTS['lines_count'] )
 
 reader_thread = Thread(target=reader, args=( OPTS, MAP ) )
 reader_thread.start()
