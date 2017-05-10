@@ -1,7 +1,7 @@
 ## ANAPIPE
 realtime log statistics in linux CLI
 
-[user@host ~] ./anapipe -h
+[user\@host \~] .\/anapipe -h
 ANAPIPE help:
  -f   | --flush    : statistics will reset after each display (default FALSE)
  -s N | --sleep N  : update statistics every N seconds (default 1)
