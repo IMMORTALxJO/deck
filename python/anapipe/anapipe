@@ -116,10 +116,9 @@ def monitor( OPTS, MAP ):
     print '┌─ ANAPIPE %s %s┐' % ( OPTS['version'], '─'*( BOX_SIZE-13-len( OPTS['version'] ) ) )
     for key in _MAP:
       print '├── %s %s┤' % ( key, '─'*( BOX_SIZE-6-len( key ) )) 
-      if len(_MAP)>1:
-        print '│  Keys : %s │' % str(_UNIQ[ key ]).ljust( BOX_SIZE-12 )
-        print '│  Reqs : %s │' % str(_WEIGHT[ key ]).ljust( BOX_SIZE-12 )
-        print '├%s┤' % ( '─'*(BOX_SIZE-2) )
+      print '│  Keys : %s │' % str(_UNIQ[ key ]).ljust( BOX_SIZE-12 )
+      print '│  Reqs : %s │' % str(_WEIGHT[ key ]).ljust( BOX_SIZE-12 )
+      print '├%s┤' % ( '─'*(BOX_SIZE-2) )
       if len(_MAP[ key ])==0:
         continue
       length = str(len(str(_MAP[ key ][0][0])))
