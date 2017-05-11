@@ -13,7 +13,8 @@ OPTS={
  'patterns': [],    # patterns list
  'lines_count': 10, # lines per pattern
  'flush': False, # clear logs after every screen 
- 'refresh_time': 1, # refresh time
+ 'refresh_time': 1, # refresh time in seconds
+ 'colour': False,
  'status': 'monitor'
 }
 
@@ -126,7 +127,11 @@ def monitor( OPTS, MAP ):
         to_print = ( '%-'+length+'d %s' ) % ( count, touch_name )
         if len(to_print)> BOX_SIZE-5:
           to_print = to_print[:BOX_SIZE-8]+'...'
-        print '│  %s │' % to_print.ljust( BOX_SIZE-5 )
+        if OPTS[ 'colour' ] and count > OPTS[ 'colour' ]:
+          print '│  \033[91m%s\033[0m │' % to_print.ljust( BOX_SIZE-5 )
+        else:
+          print '│  %s │' % to_print.ljust( BOX_SIZE-5 )
+        
     print '└%s┘' % ( '─'*(BOX_SIZE-2) )
     if OPTS['flush']:
       for pattern in MAP:
@@ -149,21 +154,26 @@ def monitor( OPTS, MAP ):
 sys.argv.pop(0)
 while len(sys.argv)>0:
   arg = sys.argv.pop(0)
-  if arg == '-c' or arg == '--count':
+  if arg == '-n' or arg == '--number':
     OPTS['lines_count'] = int(sys.argv.pop(0))
     continue
   if arg == '-f' or arg == '--flush':
     OPTS['flush'] = True
     continue
-  if arg == '-s' or arg == '--sleep':
+  if arg == '-i' or arg == '--interval':
     OPTS['refresh_time'] = float(sys.argv.pop(0))
     continue
+  if arg == '-c' or arg == '--colour':
+    OPTS['colour'] = float(sys.argv.pop(0))
+    continue
+
   if arg=='?' or arg=='-h' or arg=='--help': # print help
     print 'ANAPIPE help:'
-    print ' -f   | --flush    : statistics will reset after each display (default FALSE)'
-    print ' -s N | --sleep N  : update statistics every N seconds (default 1)'
-    print ' -c N | --count N  : show the first N positions (default 10)'
-    print ' -h   | --help | ? : print this help'
+    print ' -f   | --flush       : statistics will reset after each display (default FALSE)'
+    print ' -s N | --sleep N     : update statistics every N seconds (default 1)'
+    print ' -i N | --interval N  : show the first N positions (default 10)'
+    print ' -h   | --help | ?    : print this help'
+    print ' -c   | --colour      : set min counter valuer for colourfull keys'
     sys.exit(0)
 
   arr = re.findall( '(\d+|\D+)', arg )
