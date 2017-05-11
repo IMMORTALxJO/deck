@@ -168,7 +168,6 @@ while len(sys.argv)>0:
     continue
 
   if arg=='?' or arg=='-h' or arg=='--help': # print help
-    print 'ANAPIPE help:'
     print ' -f   | --flush       : statistics will reset after each display (default FALSE)'
     print ' -s N | --sleep N     : update statistics every N seconds (default 1)'
     print ' -i N | --interval N  : show the first N positions (default 10)'
