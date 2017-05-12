@@ -34,7 +34,7 @@ class sorted_dict:
 
     if self.MAP[ key ] >= self.lowest:
       self.dirty[ key ] = 1
-    self.weight += 1
+    self.weight += 1 
 
   def up_key( self, key ):
     weight = self.MAP[ key ]
@@ -60,7 +60,9 @@ class sorted_dict:
     dirty = self.dirty.keys()
     self.dirty = {}
     for key in dirty:
-      self.up_key( key )
+      if self.MAP[ key ]>self.lowest:
+        self.up_key( key )
+    sys.exit()
     for weight, key in self.sorted:
       if len(str(weight))>sorted_dict.max_len[0]:
         sorted_dict.max_len[0] = len(str(weight))
