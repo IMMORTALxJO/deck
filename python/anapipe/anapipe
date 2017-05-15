@@ -108,14 +108,12 @@ def monitor( OPTS, MAP ):
       _MAP[ name ] = MAP[ key ].get()
       _UNIQ[ name ] = MAP[ key ].keys_counter
       _WEIGHT[ name ] = MAP[ key ].weight
-
     BOX_SIZE = sorted_dict.max_len[0]+sorted_dict.max_len[1]+6
     if BOX_SIZE < 15:
       BOX_SIZE = 15
     if BOX_SIZE > 100:
       BOX_SIZE = 100
     os.system( [ 'clear', 'cls' ][ os.name == 'nt' ] )
-
     print '┌─ ANAPIPE %s %s┐' % ( OPTS['version'], '─'*( BOX_SIZE-13-len( OPTS['version'] ) ) )
     for key in _MAP:
       print '├── %s %s┤' % ( key, '─'*( BOX_SIZE-6-len( key ) )) 
@@ -133,7 +131,6 @@ def monitor( OPTS, MAP ):
           print '│  \033[91m%s\033[0m │' % to_print.ljust( BOX_SIZE-5 )
         else:
           print '│  %s │' % to_print.ljust( BOX_SIZE-5 )
-        
     print '└%s┘' % ( '─'*(BOX_SIZE-2) )
     if OPTS['flush']:
       for pattern in MAP:
