@@ -162,7 +162,7 @@
 		}
 
 		public function total(){
-			$target_url = ( $this->config[ 'total' ][ 'target_url' ] )? $this->config[ 'total' ][ 'target_url' ] : "{$_SERVER[ 'SCRIPT_URI' ]}?total" ;
+			$target_url = ( $this->config[ 'total' ][ 'target_url' ] )? $this->config[ 'total' ][ 'target_url' ] : "http://{$_SERVER['SERVER_NAME']}{$_SERVER[ 'REQUEST_URI' ]}?total" ;
 			$count = $this->config[ 'total' ][ 'count' ]+1;
 			$total_time = 0;
 			for( $i=0; $i<$count; $i++ ){
