@@ -83,7 +83,7 @@
 		}
 
 		public function init(){
-			$this->ROOT = $_SERVER[ 'DOCUMENT_ROOT' ];
+			$this->ROOT = realpath( dirname(__FILE__) );
 			if( !$this->config[ 'mysql' ][ 'host' ] )
 				$this->mysql_find_config();
 			$this->mysql();
