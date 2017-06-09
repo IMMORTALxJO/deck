@@ -4,7 +4,6 @@
 		die();
 	}
 	ini_set( 'display_errors', 0 );
-	ini_set( 'open_basedir', '' );
 	ini_set( 'opcache.enabled', '1' );
 
 	class TEST {
