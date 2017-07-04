@@ -1,8 +1,4 @@
 <?php
-	if ( isset($_GET[ 'total' ]) ){
-		require_once( './index.php' );
-		die();
-	}
 	ini_set( 'display_errors', 0 );
 	ini_set( 'opcache.enabled', '1' );
 
@@ -162,7 +158,7 @@
 		}
 
 		public function total(){
-			$target_url = ( $this->config[ 'total' ][ 'target_url' ] )? $this->config[ 'total' ][ 'target_url' ] : "http://{$_SERVER['SERVER_NAME']}{$_SERVER[ 'REQUEST_URI' ]}?total" ;
+			$target_url = ( $this->config[ 'total' ][ 'target_url' ] )? $this->config[ 'total' ][ 'target_url' ] : "http://{$_SERVER['SERVER_NAME']}/" ;
 			$count = $this->config[ 'total' ][ 'count' ]+1;
 			$total_time = 0;
 			for( $i=0; $i<$count; $i++ ){
