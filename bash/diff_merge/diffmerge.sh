@@ -4,13 +4,24 @@ dst_file=$2
 
 if [[ ! -f $src_file ]] || [[ ! -f $dst_file ]]
 then
+	if [[ -d $src_file ]] && [[ -d $dst_file ]]
+	then
+		for src_file_fd in $src_file/*
+		do
+			src_base_file=$(basename $src_file_fd)
+			[[ -f $dst_file/$src_base_file ]] &&
+				[[ $(md5sum $src_file_fd | cut -d ' ' -f 1 ) != $(md5sum $dst_file/$src_base_file | cut -d ' ' -f 1 ) ]] &&
+				$0 $src_file/$src_base_file $dst_file/$src_base_file
+		done
+		exit 0
+	fi
 	echo 'USAGE: diffmerge.sh src_file dst_file'
 	exit 1
 fi
 
 diff_text=$( diff $dst_file $src_file )
 [[ $? -eq 0 ]]	&&
-	echo 'Files are identical' &&
+	echo -e "\033[1;32mFiles are identical: $src_file => $dst_file\033[0m" &&
 	exit 0
 
 tmp_block=()
