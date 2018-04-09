@@ -6,12 +6,16 @@ if [[ ! -f $src_file ]] || [[ ! -f $dst_file ]]
 then
 	if [[ -d $src_file ]] && [[ -d $dst_file ]]
 	then
-		for src_file_fd in $src_file/*
+		cd $src_file
+		files_list=$(find ./ -type f)
+                cd -
+		for src_filename in ${files_list[@]}
 		do
-			src_base_file=$(basename $src_file_fd)
-			[[ -f $dst_file/$src_base_file ]] &&
-				[[ $(md5sum $src_file_fd | cut -d ' ' -f 1 ) != $(md5sum $dst_file/$src_base_file | cut -d ' ' -f 1 ) ]] &&
-				$0 $src_file/$src_base_file $dst_file/$src_base_file
+                        src_full_path=$(echo $src_file/$src_filename | sed 's;//;/;g' | sed 's;/./;/;g')
+                        dst_full_path=$(echo $dst_file/$src_filename | sed 's;//;/;g' | sed 's;/./;/;g')
+			[[ -f $dst_full_path ]] &&
+				[[ $(md5sum $src_full_path | cut -d ' ' -f 1 ) != $(md5sum $dst_full_path | cut -d ' ' -f 1 ) ]] &&
+				$0 $src_full_path $dst_full_path
 		done
 		exit 0
 	fi
