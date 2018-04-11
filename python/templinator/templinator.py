@@ -1,4 +1,6 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 import os
 import json
 import argparse
@@ -6,34 +8,44 @@ from jinja2 import Template
 from collections import OrderedDict
 
 # Parse args
+
 parser = argparse.ArgumentParser()
-parser.add_argument('--key','-k', type=str, required=False, help='A key of dict which will be updated')
-parser.add_argument('--state-file','-sf', type=str, required=True, help='File where state saves')
-parser.add_argument('--template','-t', type=str, required=False, help='Jinja2 template to render from')
-args, another_args = parser.parse_known_args()
+parser.add_argument('--key', '-k', type=str, required=False,
+          help='A key of dict which will be updated')
+parser.add_argument('--state-file', '-sf', type=str, required=True,
+          help='File where state saves')
+parser.add_argument('--template', '-t', type=str, required=False,
+          help='Jinja2 template to render from')
+(args, another_args) = parser.parse_known_args()
 
 # Parse inserted fields
+
 update_data = {}
 data_key = False
 for arg in another_args:
   if data_key:
-    update_data[ data_key ] = arg
+    update_data[data_key] = arg
     data_key = False
   elif arg[:2] == '--':
     data_key = arg[2:]
 
 # Read old state, update it and write
+
 try:
-  state_file_fd = open( args.state_file, 'r' )
-  state = json.loads( state_file_fd.read(), object_pairs_hook=OrderedDict )
+  state_file_fd = open(args.state_file, 'r')
+  state = json.loads(state_file_fd.read(),
+             object_pairs_hook=OrderedDict)
 except:
-  state={}
+  state = {}
 if args.key:
-  state[ args.key ] = update_data
-  with open( args.state_file, 'w+' ) as state_file_fd:
-    state_file_fd.write( json.dumps( state, sort_keys=True, indent=2, separators=(',', ': ') ) )
+  state[args.key] = update_data
+  with open(args.state_file, 'w+') as state_file_fd:
+    state_file_fd.write(json.dumps(state, sort_keys=True, indent=2,
+              separators=(',', ': ')))
 
 # Commit state to template and print render
+
 if args.template:
-  with open( args.template, 'r' ) as template_file_fd:
-    print( Template( template_file_fd.read() ).render( state=state ) )
+  with open(args.template, 'r') as template_file_fd:
+    print Template(template_file_fd.read()).render(state=state)
+  
