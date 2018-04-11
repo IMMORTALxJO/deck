@@ -7,9 +7,9 @@ from collections import OrderedDict
 
 # Parse args
 parser = argparse.ArgumentParser()
-parser.add_argument('--state-file','-sf', type=str, required=True, help='Path to state file')
-parser.add_argument('--key','-k', type=str, required=False, help='Name of key to update')
-parser.add_argument('--template','-t', type=str, required=False, help='Jinja2 template file')
+parser.add_argument('--key','-k', type=str, required=False, help='A key of dict which will be updated')
+parser.add_argument('--state-file','-sf', type=str, required=True, help='File where state saves')
+parser.add_argument('--template','-t', type=str, required=False, help='Jinja2 template to render from')
 args, another_args = parser.parse_known_args()
 
 # Parse inserted fields

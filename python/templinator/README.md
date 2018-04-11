@@ -1,7 +1,12 @@
 ## TEMPLINATOR
 
 Tool for easy template updating. It can update dict of state and commit it to some template.
-
+Every command argument mutates in key/value of subdict, exceptions:
+```
+--key       |-k   :  A key of dict which will be updated
+--state-file|-sf  :  File where state saves
+--template  |-t   :  Jinja2 template to render from
+```
 Add data to state file:
 ```
 $ templinator.py --key DEV --state-file ./project_deploy.state --User 'Mr Cucumber' --Date "$(date +'%F %T')" --Hash e43r1a89
