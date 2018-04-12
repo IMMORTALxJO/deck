@@ -3,14 +3,15 @@
 src_path=$1
 dst_path=$2
 
+echo_usage(){
+  echo "USAGE: $( basename $0 ) src_file dst_file"
+}
+
 [[ -z $src_path ]] && [[ -z $dst_path ]] && {
   echo_usage
   exit 1
 }
 
-echo_usage(){
-	echo "USAGE: $( basename $0 ) src_file dst_file"
-}
 
 if [[ -d $src_path ]] && [[ -d $dst_path ]]
 then
