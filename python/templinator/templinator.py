@@ -52,7 +52,9 @@ if args.key:
             state.pop(args.key)
 
     if not args.delete:
-        state[args.key] = update_data
+        if not args.key in state:
+            state[args.key]={}
+        state[args.key].update(update_data)
 
     with open(args.state_file, 'w+') as state_file_fd:
         state_file_fd.write(json.dumps(state, sort_keys=True, indent=2,
