@@ -51,10 +51,20 @@ trap clear_tmp_files EXIT HUP INT QUIT PIPE TERM
 
 save_prev_block(){
   [[ ${#tmp_block[@]} -eq 0 ]] && return 0
-  echo "$src_path => $dst_path"
+  echo "$dst_path <= $src_path"
   printf "\033[01;34m %s\033[1;33m\n" ${tmp_block[@]}
-  read -n 1 -p 'MERGE THIS BLOCK ? (y/n) ' answer
+  read -n 1 -p 'MERGE THIS BLOCK ? y/n or e (edit and merge)' answer
   echo -e "\033[0m"
+  [[ ${answer,,} == 'e' ]] && {
+   tmp_edit_file=`mktemp`
+   printf "%s\n" ${tmp_block[@]} > $tmp_edit_file
+   vim $tmp_edit_file
+   tmp_block=( $(cat $tmp_edit_file ) )
+   rm -f $tmp_edit_file
+   echo -e '\033[1;32mDiff edited...\033[0m'
+   save_prev_block
+   return 0
+  }
   [[ ${answer,,} == 'y' ]] &&
     printf "%s\n" ${tmp_block[@]} >> $tmp_patch_file
   tmp_block=()
