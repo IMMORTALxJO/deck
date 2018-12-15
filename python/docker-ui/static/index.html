@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,400italic|Material+Icons">
+  <link rel="stylesheet" href="https://unpkg.com/vue-material@beta/dist/vue-material.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/vue-material@beta/dist/theme/default.css">
+  <script src="https://unpkg.com/vue@2.5.17/dist/vue.min.js"></script>
+  <script src="https://unpkg.com/vue-resource@1.5.1/dist/vue-resource.min.js"></script>
+  <script src="https://unpkg.com/vue-material@1.0.0-beta-10.2/dist/vue-material.min.js"></script>
+  <script src="https://unpkg.com/vue-infinite-loading@^2/dist/vue-infinite-loading.js"></script>
+  <title>Docker Simple UI</title>
+</head>
+<body>
+  <div id='app' style='margin:30px auto 30px;width: 80%;min-width:600px;max-width: 1280px;'>
+    <div v-for="(containers, hostname, index) in hosts">
+      <h3 class="md-title">Host: {{ hostname.split(':')[0] }}</h3>
+      <md-table v-model="containers" md-sort="name" md-sort-order="asc" md-card md-elevation="6">
+        <md-table-row slot="md-table-row" slot-scope="{ item }"  >
+          <md-table-cell md-label="Name" md-sort-by="name">{{ item.name }}</md-table-cell>
+          <md-table-cell md-label="Status" md-sort-by="status">{{ item.computedStatus }}</md-table-cell>
+          <md-table-cell md-label="ID">{{ item.shortId }}</md-table-cell>
+          <md-table-cell md-label="StartedAt">{{ item.state.StartedAt.split('T').join(' ') }}</md-table-cell>
+          <md-table-cell md-label="FinishedAt">{{ item.state.Running ? '' : item.state.FinishedAt.split('T').join(' ') }}</md-table-cell>
+          <md-table-cell md-label="Actions">
+            <md-button :md-ripple="false" class="md-primary" v-if="!item.state.Running" @click.stop="startContainer( hostname, item )">Start</md-button>
+            <md-button :md-ripple="false" class="md-accent" v-if="item.state.Running" @click.stop="stopContainer( hostname, item )">Stop</md-button>
+          </md-table-cell>
+        </md-table-row>
+      </md-table>
+    </div>
+  </div>
+   <script src="/static/app.js"></script>
+</body>
+</html>
