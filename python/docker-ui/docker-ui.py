@@ -19,6 +19,7 @@ options = parser.parse_args()
 
 dockerClient = docker.from_env()
 app = Flask(__name__, static_url_path='/static', static_folder='./static',)
+CORS(app, resources={"*": {"origins": "*"}})
 
 @app.route('/')
 def printLanding():
