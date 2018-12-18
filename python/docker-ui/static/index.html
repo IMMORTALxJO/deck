@@ -8,22 +8,30 @@
 </head>
 <body>
   <div id='app' style='margin:30px auto 30px;width: 80%;min-width:600px;max-width: 1280px;'>
-    <div v-for="(containers, hostname, index) in hosts">
-      <h3 class="md-title">Host: {{ hostname.split(':')[0] }}</h3>
-      <md-table v-model="containers" md-sort="name" md-sort-order="asc" md-card md-elevation="6">
+      <md-table v-model="searched" md-sort="host" md-sort-order="asc" md-card md-elevation="6">
+        <md-table-toolbar>
+          <div class="md-toolbar-section-start">
+            <h1 class="md-title">Containers</h1>
+          </div>
+
+          <md-field md-clearable class="md-toolbar-section-end">
+            <md-input placeholder="Search ..." v-model="search" @input="searchTable" />
+          </md-field>
+        </md-table-toolbar>
         <md-table-row slot="md-table-row" slot-scope="{ item }"  >
+          <md-table-cell md-label="Host" md-sort-by="host">{{ item.host }}</md-table-cell>
           <md-table-cell md-label="Name" md-sort-by="name">{{ item.name }}</md-table-cell>
-          <md-table-cell md-label="Status" md-sort-by="status">{{ item.computedStatus }}</md-table-cell>
+          <md-table-cell md-label="Status" md-sort-by="computedStatus">{{ item.computedStatus }}</md-table-cell>
           <md-table-cell md-label="ID">{{ item.shortId }}</md-table-cell>
           <md-table-cell md-label="StartedAt">{{ item.state.StartedAt.split('T').join(' ') }}</md-table-cell>
           <md-table-cell md-label="FinishedAt">{{ item.state.Running ? '' : item.state.FinishedAt.split('T').join(' ') }}</md-table-cell>
           <md-table-cell md-label="Actions">
-            <md-button :md-ripple="false" class="md-primary" v-if="!item.state.Running" @click.stop="startContainer( hostname, item )">Start</md-button>
-            <md-button :md-ripple="false" class="md-accent" v-if="item.state.Running" @click.stop="stopContainer( hostname, item )">Stop</md-button>
+            <md-button :md-ripple="false" class="md-primary" v-if="!item.state.Running" @click.stop="actionContainer( 'start', item )">Start</md-button>
+            <md-button :md-ripple="false" class="md-accent" v-if="item.state.Running" @click.stop="actionContainer( 'stop', item )">Stop</md-button>
           </md-table-cell>
         </md-table-row>
+        <md-table-empty-state md-label="No containers found"></md-table-empty-state>
       </md-table>
-    </div>
     <div id="loadingBar" v-show="showLoading">
       <div class="lds-css ng-scope">
         <div class="lds-spinner" style="100%;height:100%">

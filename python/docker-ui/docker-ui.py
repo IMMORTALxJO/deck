@@ -41,9 +41,9 @@ def getContainers():
     if container.attrs['State']['Restarting']:
       computedStatus = 'Restarting'
     output.append({
-      "id": container.id,
       "name": container.name,
       "computedStatus": computedStatus,
+      "longId": container.id,
       "shortId": container.short_id,
       "state": container.attrs['State']
     })

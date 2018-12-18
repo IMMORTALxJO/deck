@@ -1,84 +1,74 @@
 Vue.use(VueMaterial.default);
 let APP = new Vue({
-  el: '#app',
+  el: "#app",
   data: {
-    hosts: {},
-    showLoading: false
+    showLoading: false,
+    containers: [],
+    searched: [],
+    search: ''
   },
   methods: {
-    initiate: function(){
-      const URL = '/hosts/list';
+    initiate: function() {
+      const URL = "/hosts/list";
       this.showLoading = true;
-      this.$http
-        .get(URL)
-        .then(
-          res => {
-            this.showLoading = false;
-            res.body.push( location.host );
-            res.body.sort( (a,b)=>a.localeCompare(b) ).forEach( hostname=>APP.getContainers(hostname) );
-          },
-          res => {
-            this.showLoading = false;
-            console.error(res);
-            alert(`Could not GET ${URL}`);
-          },
-        );
+      this.$http.get(URL).then(
+        res => {
+          res.body.push(location.host);
+          res.body.forEach(host => APP.getContainers(host, ()=>this.searched=this.containers ));
+        },
+        res => this.errorCatch
+      );
     },
-    getContainers: function(hostname){
-      if( hostname.indexOf(':') < 0 )
-        hostname += `:${location.port}`;
-      const URL = `http://${hostname}/containers/list`;
+    getContainers: function(host, clbk=false) {
+      if (host.indexOf(":") < 0) host += `:${location.port}`;
+      const URL = `http://${host}/containers/list`;
       this.showLoading = true;
-      this.$http
-        .get(URL)
-        .then(
-          res => {
-            this.showLoading = false;
-            this.$set( this.hosts, hostname, res.body )
-          },
-          res => {
-            this.showLoading = false;
-            console.error(res);
-            alert(`Could not GET ${URL}`);
-          }
-        );
+      this.$http.get(URL).then(
+        res => {
+          this.updateContainers( host, res.body);
+          if( clbk )
+            clbk();
+          this.showLoading = false;
+        },
+        res => this.errorCatch
+      );
     },
-    stopContainer: function( hostname, container ){
-      const URL = `http://${hostname}/containers/stop/${container.id}`;
+    actionContainer: function(action, container) {
+      const URL = `http://${container.host}/containers/${action}/${container.longId}`;
       this.showLoading = true;
-      this.$http
-        .get(URL)
-        .then(
-          res => {
-            this.showLoading = false;
-            this.$set( this.hosts, hostname, res.body )
-          },
-          res => {
-            this.showLoading = false;
-            console.error(res);
-            alert(`Could not GET ${URL}`);
-          }
-        );
+      this.$http.get(URL).then(
+        res => {
+          this.updateContainers(container.host, res.body);
+          this.showLoading = false;
+        },
+        res => this.errorCatch
+      );
     },
-    startContainer: function( hostname, container ){
-      const URL = `http://${hostname}/containers/start/${container.id}`;
-      this.showLoading = true;
-      this.$http
-        .get(URL)
-        .then(
-          res => {
-            this.showLoading = false;
-            this.$set( this.hosts, hostname, res.body )
-          },
-          res => {
-            this.showLoading = false;
-            console.log(res);
-            alert(`Could not GET ${URL}`);
-          }
-        );
+    updateContainers: function(host, containers ){
+      this.containers = this.containers.filter( container => container.host != host );
+      containers.forEach( container=>{
+        container['host'] = host;
+        this.containers.push( container );
+      });
+      this.searchTable();
+    },
+    errorCatch: function(res) {
+      this.showLoading = false;
+      console.error(res);
+      alert(`Could not GET ${URL}`);
+    },
+    searchTable: function(){
+      const searchItem = this.search.toLowerCase();
+      this.searched = ( searchItem == '' ) ?
+        this.containers :
+        this.containers.filter( container=>{
+          return container.host.toLowerCase().includes( searchItem ) ||
+          container.name.toLowerCase().includes( searchItem ) ||
+          container.longId.toLowerCase().includes( searchItem );
+        });
     }
   },
   created: function() {
-    this.initiate()
-  },
+    this.initiate();
+  }
 });
