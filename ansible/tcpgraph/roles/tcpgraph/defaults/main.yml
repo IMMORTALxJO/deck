@@ -1,0 +1,11 @@
+---
+
+tcpgraph__duration: 30
+tcpgraph__uuid: {{ ansible_date_time.iso8601_micro | to_uuid }}
+tcpgraph__args: "-i any -nnnn -l ip 2>/dev/null"
+
+# filter will format output to
+# srcip => dstip
+
+tcpgraph__filter: "cut -d' ' -f3,5 | cut -d':' -f1"
+
