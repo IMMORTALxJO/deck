@@ -1,7 +1,0 @@
----
-
-- name: Prepare
-  include: ./prepare.yml
-
-- name: Run tcpdump and download dumps
-  include: ./collect-dumps.yml

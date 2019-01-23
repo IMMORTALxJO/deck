@@ -1,0 +1,10 @@
+---
+
+tcpgraph__duration: 30 # seconds
+tcpgraph__uuid: "{{ ansible_date_time.iso8601_micro | to_uuid }}"
+tcpgraph__tcpdump_args: "and host not {{ ansible_facts.env.SSH_CONNECTION.split(' ')[0] }}"
+tcpgraph__local_path: "~/.tcpgraph/" # path to store temporary files and report in
+# tcpgraph__custom_processor_args: "--nodename mysqlserver:1.2.3.4/32 --nodename DevENV:10.5.0.0/16"
+tcpgraph__custom_processor_args: ""
+tcpgraph__templinator_render_id: "no-render-id" # you can send state in templinator
+tcpgraph__debug: true

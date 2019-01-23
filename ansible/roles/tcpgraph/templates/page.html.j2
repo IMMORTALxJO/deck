@@ -1,0 +1,69 @@
+<html>
+  <head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sigma.js/1.2.1/sigma.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sigma.js/1.2.1/plugins/sigma.layout.forceAtlas2.min.js"></script>  
+
+  </head>
+  <style type="text/css">body{margin:0px;}</style>
+  <body>
+    <div id="viewport" style="width:100%;height:100%"></div>
+    <script type="text/javascript">
+      const data={{ tcpgraph__dump | to_json }};
+      const max_line_width = 7;
+      const max_node_width = 10;
+      const max_node_weight = data.nodes[data.nodes.length-1].weight;
+      const max_edge_weight = data.edges[data.edges.length-1].weight;
+      var s = new sigma({
+        renderer: {
+          // IMPORTANT:
+          // This works only with the canvas renderer, so the
+          // renderer type set as "canvas" is necessary here.
+          container: document.getElementById('viewport'),
+          type: 'canvas'
+        }
+      });
+      s.settings({
+        type: 'canvas',
+        labelThreshold:0,
+        minNodeSize: 4,
+        edgeHoverColor: 'rgba(0,0,0,.333)'
+      })
+      data.nodes.forEach( (node,i)=>{
+        s.graph.addNode({
+          id: node.name,
+          label: node.name,
+          x:i,
+          y:1,
+          size: node.weight
+        })
+      });
+      data.edges.forEach( (edge,i)=>{
+        let color = '#000';
+        if( edge.src.indexOf('-')>0 && edge.dest.indexOf('-')>0) {
+          let s = edge.src.split('.')[0].split('-');
+          let t = edge.dest.split('.')[0].split('-');
+          s.pop();
+          t.pop();
+          if( s.join('-') == t.join('-') )
+            color = '#f00';
+          if( edge.weight < max_edge_weight/2 )
+            edge.weight = max_edge_weight/2;
+        }
+        s.graph.addEdge({
+          id: `e${i}`,
+          source: edge.src,
+          target: edge.dest,
+          size: edge.weight,
+          type: 'dashed',
+          color 
+        })
+      });
+
+      s.startForceAtlas2({startingIterations:1000,iterationsPerRender:0});
+      setTimeout( ()=>{
+        s.killForceAtlas2();
+      },1000)
+      s.refresh();
+    </script>
+  </body>
+</html>

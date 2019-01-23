@@ -2,8 +2,7 @@
 
 - name: Collect tcpdump and create graph
   hosts: all
-  become: yes
-  become_method: sudo
   gather_facts: yes
   roles:
-    - name: tcpgraph
+  - name: tcpgraph
+

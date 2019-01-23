@@ -1,0 +1,112 @@
+---
+
+- name: Remove old joined dump
+  file:
+    path: "{{ tcpgraph__local_path }}/*.report"
+    state: absent
+  run_once: true
+  ignore_errors: true
+  delegate_to: 127.0.0.1
+
+- name: Create temporary file for output
+  tempfile:
+    state: file
+    suffix: temp
+  register: temporary_file_path
+
+- name: "DEBUG: Created temporary file"
+  debug:
+    msg: "temporary_file_path.path: {{ temporary_file_path.path }}"
+  when: tcpgraph__debug
+
+- name: Generate tcpdump command
+  set_fact:
+    tcpdump_command: timeout {{ tcpgraph__duration }} tcpdump -i any -nnn -l ip {{ tcpgraph__tcpdump_args }} 2>/dev/null | cut -d' ' -f3,5 > {{ temporary_file_path.path }}
+
+- name: "DEBUG: tcpdump_command"
+  debug:
+    msg: "{{ tcpdump_command }}"
+  when: tcpgraph__debug
+
+- name: Collect tcpdump for {{ tcpgraph__duration }} seconds
+  become: true
+  shell: "{{ tcpdump_command }}"
+
+- name: Register local dump path
+  set_fact:
+    local_dump_path: "{{ tcpgraph__local_path }}/{{ inventory_hostname }}.report"
+
+- name: Download dump from remote host
+  become: true
+  fetch:
+    src: "{{ temporary_file_path.path }}"
+    dest: "{{ local_dump_path }}"
+    flat: yes
+
+- name: Remove dump on remote host
+  file:
+    path: "{{ temporary_file_path.path }}"
+    state: absent
+
+- name: "DEBUG: local_dump_path"
+  debug:
+    msg: "{{ local_dump_path }}"
+  when: tcpgraph__debug
+
+- name: Register host ip/nodename var
+  set_fact:
+    ips_nodenames: ""
+
+- name: Enrich ips_nodenames
+  set_fact:
+    ips_nodenames: "{{ ips_nodenames }} --nodename '{{ inventory_hostname }}:{{ item }}/32'"
+  with_items: "{{ ansible_facts.all_ipv4_addresses }}"
+
+- name: "DEBUG: ips_nodenames"
+  debug:
+    msg: "{{ ips_nodenames }}"
+  when: tcpgraph__debug
+
+- name: Generate processor command
+  set_fact:
+    processor_command: "processor.py --templinator-render-id {{ tcpgraph__templinator_render_id }} --dump {{ groups['all'] | map('extract',hostvars) | selectattr('local_dump_path','defined') | map(attribute='local_dump_path') | list | join(' --dump ') }}{{ groups['all'] | map('extract',hostvars) | selectattr('ips_nodenames','defined') | map(attribute='ips_nodenames') | list | join(' ') }} {{ tcpgraph__custom_processor_args }}"
+
+- name: "DEBUG: processor_command"
+  debug:
+    msg: "{{ processor_command }}"
+  run_once: true
+  when: tcpgraph__debug
+
+- name: Analize dumps
+  script: "{{ processor_command }}"
+  register: tcpgraph__dump_plain
+  run_once: true
+  delegate_to: 127.0.0.1
+
+- name: Remove dump on local host
+  file:
+    path: "{{ local_dump_path }}"
+    state: absent
+  delegate_to: 127.0.0.1
+  when: not tcpgraph__debug
+
+- name: Decode content
+  set_fact:
+    tcpgraph__dump: "{{ tcpgraph__dump_plain['stdout'] }}"
+
+- name: "DEBUG: Analized data"
+  debug:
+    var: tcpgraph__dump
+  run_once: true
+  when: tcpgraph__debug
+
+- name: Generate page
+  template:
+    src: page.html.j2
+    dest: "{{ tcpgraph__local_path }}/report_{{ tcpgraph__uuid }}.html"
+  run_once: true
+  delegate_to: 127.0.0.1
+
+- debug:
+    msg: "Page generated in {{ tcpgraph__local_path }}/report_{{ tcpgraph__uuid }}.html"
+  run_once: true
