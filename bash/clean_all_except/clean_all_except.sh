@@ -4,14 +4,18 @@ BINS=()
 NODEJS=()
 DIRS=()
 
-RM_COMMAND=('find' '/' '-type' 'f'  '!' '-path' '"/"')
+RM_COMMAND=()
 
 function RM_COMMAND_PLUS_FILE {
-  RM_COMMAND+=('!' '-path' "'${1}'")
+  if [[ "${#RM_COMMAND[@]}" -gt 0 ]]; then
+    RM_COMMAND=("${RM_COMMAND[@]}" '-or')
+  fi;
+  RM_COMMAND=("${RM_COMMAND[@]}" '-path' "'${1}'")
 }
 
 function RM_COMMAND_PLUS_DIR {
-  RM_COMMAND+=('!' '-path' '"'${1}'"' '!' '-path' '"'${1}'/*"')
+  RM_COMMAND_PLUS_FILE "${1}"
+  RM_COMMAND_PLUS_FILE "${1}/*"
 }
 
 RM_COMMAND_PLUS_DIR /proc
@@ -49,9 +53,6 @@ do
     --it-is-not-docker)
       FORCE_DOCKER_CHECK=1
     ;;
-    --run-delete)
-      RUN_DELETE=1
-    ;;
   esac;
 done
 
@@ -61,8 +62,6 @@ if ! cat /proc/self/cgroup | grep docker > /dev/null; then
     exit 1
   fi;
 fi;
-
-
 
 function SCAN_BIN {
   local bin_path="${1}"
@@ -91,14 +90,8 @@ function SCAN_BINS {
   for f in "${BINS[@]}"; do
     SCAN_BIN "${f}"
   done;
-  NO_DELETE_FILES=($( printf '%s\n' "${NO_DELETE_FILES[@]}" | sort | uniq ))
 }
 
 SCAN_BINS
 
-RM_COMMAND+=('-delete')
-echo "${RM_COMMAND[@]}"
-
-if [[ ! -z $RUN_DELETE ]];then
-  "${RM_COMMAND[@]}" > /dev/null 2>&1 || true
-fi;
+echo "find / -type f -not \\( ${RM_COMMAND[@]} \\)"
